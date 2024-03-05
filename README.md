@@ -5,7 +5,7 @@ Now your problems are solved at the same moment they're arised!
 ## Installation
 
 ```console
-pip install smart-exceptions
+pip install git+https://github.com/roma-guru/smart-exceptions
 ```
 
 ## Usage
