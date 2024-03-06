@@ -1,4 +1,6 @@
 *.egg-info
+*.swp
+build
 dist
 .env
 __pycache__

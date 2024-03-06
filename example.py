@@ -1,7 +1,7 @@
 import os
-import smart_exceptions
+import smart_exceptions as se
 
-smart_exceptions.install(os.environ["OPENAI_TOKEN"])
+se.install()
 
 #3 / 0
 #print({}["asdf"])
