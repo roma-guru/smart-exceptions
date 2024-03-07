@@ -2,19 +2,20 @@ import sys
 import io
 import os
 
+from rich import print
+from rich.markdown import Markdown
+from rich.traceback import Traceback
+
 import openai
 from contextlib import contextmanager
 
 client = None
-sys_prompt = "Help me to debug Python exceptions. Answer in {lang}."
+sys_prompt = """
+    Help me to debug Python exceptions. 
+    Use Markdown with sections.
+    Answer in {lang}.
+    """
 last_request = None
-
-
-# Function to process streaming output
-def process_output(stream):
-    for chunk in stream:
-        if chunk.choices[0].delta.content is not None:
-            print(chunk.choices[0].delta.content, end="")
 
 
 @contextmanager
@@ -48,7 +49,10 @@ def install(openai_token: str=None, explicit=False, lang="english"):
             sys.__excepthook__(type, value, traceback)
             trace = buffer.getvalue()
 
-        print(trace)
+        print(Traceback.from_exception(
+            type, value, traceback,
+            show_locals=True, max_frames=10
+        ))
 
         last_request = [
             {"role": "system", "content": sys_prompt.format(lang=lang)},
@@ -70,10 +74,9 @@ def ask_gpt():
         raise ValueError("Please call install() first!")
 
     if last_request is not None:
-        print("Asking ChatGPT...")
+        print("Asking [bold green]ChatGPT...[/bold green]")
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=last_request,
-            stream=True,
         )
-        process_output(response)
+        print(Markdown(response.choices[0].message.content))

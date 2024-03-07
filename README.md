@@ -18,8 +18,5 @@ You can provide token explicitly or implicitly via $OPENAI\_TOKEN.
 
 ## TODO
 1. Colors!
-2. Better prompt (ask for markdown and sections)
-3. Markdown highlighting
 4. Probably other GPTs: Bard, Yandex
-5. Localization
 6. Ipython/debug console support
