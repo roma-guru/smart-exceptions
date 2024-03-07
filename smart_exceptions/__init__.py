@@ -1,6 +1,7 @@
 import sys
 import io
 import os
+import httpx
 
 from rich import print
 from rich.markdown import Markdown
@@ -28,7 +29,7 @@ def redirect_stderr():
         sys.stderr = sys.__stderr__
 
 
-def install(openai_token: str=None, explicit=False, lang="english"):
+def install(openai_token: str=None, explicit=False, lang="english", proxy=None):
     # TODO: make it work in Ipython
     global client
     if openai_token is None:
@@ -36,6 +37,10 @@ def install(openai_token: str=None, explicit=False, lang="english"):
             openai_token = os.environ['OPENAI_TOKEN']
         except KeyError:
             raise ValueError("Please provide OpenAI token via param or $OPENAI_TOKEN var")
+
+    if proxy is None:
+        proxy = os.environ.get('OPENAI_PROXY')
+
 
     def smart_handler(type, value, traceback):
         global last_request
@@ -63,7 +68,7 @@ def install(openai_token: str=None, explicit=False, lang="english"):
         if not explicit:
             ask_gpt()
     
-    client = openai.OpenAI(api_key=openai_token)
+    client = openai.OpenAI(api_key=openai_token, http_client=httpx.Client(proxy=proxy))
     sys.excepthook = smart_handler
 
 
