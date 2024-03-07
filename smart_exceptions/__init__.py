@@ -6,7 +6,7 @@ import openai
 from contextlib import contextmanager
 
 client = None
-sys_prompt = "Help me to debug Python exceptions"
+sys_prompt = "Help me to debug Python exceptions. Answer in {lang}."
 last_request = None
 
 
@@ -27,7 +27,7 @@ def redirect_stderr():
         sys.stderr = sys.__stderr__
 
 
-def install(openai_token: str=None, explicit=False):
+def install(openai_token: str=None, explicit=False, lang="english"):
     # TODO: make it work in Ipython
     global client
     if openai_token is None:
@@ -51,7 +51,7 @@ def install(openai_token: str=None, explicit=False):
         print(trace)
 
         last_request = [
-            {"role": "system", "content": sys_prompt},
+            {"role": "system", "content": sys_prompt.format(lang=lang)},
             {"role": "user", "content": f"```{code}```"},
             {"role": "user", "content": trace},
         ]
