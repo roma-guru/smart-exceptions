@@ -31,7 +31,7 @@ def redirect_stderr():
         sys.stderr = sys.__stderr__
 
 
-def install(openai_token: str=None, explicit=False, lang="english", proxy=None):
+def install(openai_token: str=None, *, explicit=False, lang="english", proxy=None):
     global client
     if openai_token is None:
         try:
