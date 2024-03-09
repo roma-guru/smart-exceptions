@@ -14,9 +14,9 @@ pip install git+https://github.com/roma-guru/smart-exceptions
 import smart_exceptions as se
 se.install("your-openai-token")
 ```
-You can provide token explicitly or implicitly via $OPENAI\_TOKEN.
+You can provide token explicitly or implicitly via _$OPENAI\_TOKEN_.
+Also you can specify proxy explicitly or via _$OPENAI\_PROXY_.
+![Example](screenshot.png)
 
 ## TODO
-1. Colors!
 4. Probably other GPTs: Bard, Yandex
-6. Ipython/debug console support
