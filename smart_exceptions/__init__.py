@@ -31,16 +31,27 @@ def redirect_stderr():
         sys.stderr = sys.__stderr__
 
 
-def install(openai_token: str=None, *, explicit=False, lang="english", proxy=None):
+def install(api_token: str=None, *, explicit=False, lang="english", proxy=None, send_code=True, backend='openai'):
+    """
+    Init GPT backend and optionaly set exception handler (if explicit=False).
+
+    api_token:
+    explicit:
+    lang:
+    proxy:
+    send_code:
+    backend:
+    """
     global client
-    if openai_token is None:
+    backend = backend.upper()
+    if api_token is None:
         try:
-            openai_token = os.environ['OPENAI_TOKEN']
+            api_token = os.environ[f'{backend}_TOKEN']
         except KeyError:
-            raise ValueError("Please provide OpenAI token via param or $OPENAI_TOKEN var")
+            raise ValueError("Please provide GPT api token via param or ${backend}_TOKEN var")
 
     if proxy is None:
-        proxy = os.environ.get('OPENAI_PROXY')
+        proxy = os.environ.get(f'{backend}_PROXY')
 
 
     def smart_handler(type, value, traceback):
@@ -50,14 +61,21 @@ def install(openai_token: str=None, *, explicit=False, lang="english", proxy=Non
         ))
 
         exc_info = (type, value, traceback)
-        ask_gpt(exc_info, lang)
+        ask_gpt(exc_info, lang=lang, send_code=send_code)
     
     client = openai.OpenAI(api_key=openai_token, http_client=httpx.Client(proxy=proxy))
     if not explicit:
         sys.excepthook = smart_handler
 
 
-def ask_gpt(exc_info=None, lang="english"):
+def ask_gpt(exc_info=None, *, dialog=False, send_code=True, lang="english"):
+    """
+    Ask GPT about exception explicitly.
+    exc_info: (type, value, traceback)
+    dialog: continue chat after answer
+    send_code: send code together with traceback
+    lang: answer language
+    """
     global client
     if client is None:
         raise ValueError("Please call install() first!")
@@ -68,10 +86,12 @@ def ask_gpt(exc_info=None, lang="english"):
 
     code = None
     filename = traceback.tb_frame.f_code.co_filename
+    #TODO: detect console
     try:
-        with open(filename, encoding="utf8") as codefile:
-            code = codefile.read()
-            code = code[:MAX_CODE_LEN]
+        if send_code:
+            with open(filename, encoding="utf8") as codefile:
+                code = codefile.read()
+                code = code[:MAX_CODE_LEN]
     except IOError:
         print("[red]Can't read code file[/red], ignoring...")
 
@@ -79,6 +99,7 @@ def ask_gpt(exc_info=None, lang="english"):
         print_exception(type, value, traceback)
         trace = buffer.getvalue()
 
+    #TODO: move next to backend
     gpt_request = [
         {"role": "system", "content": sys_prompt.format(lang=lang)},
         {"role": "user", "content": f"```{code}```"},

@@ -26,4 +26,7 @@ Also you can specify proxy explicitly or via _$OPENAI\_PROXY_.
 ![Example](screenshot.png)
 
 ## TODO
-4. Probably other GPTs: Bard, Yandex
+4. Other GPTs: Bard, Clade, Yandex
+5. Dialog mode
+6. Skip filesend from console
+7. Docstrings
