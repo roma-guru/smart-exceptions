@@ -11,13 +11,14 @@ pip install git+https://github.com/roma-guru/smart-exceptions
 In file:
 ```python
 import smart_exceptions as se
-se.install("your-openai-token")
-...
+se.init("your-openai-token")
+se.install_handler()
+...[code causing exception]...
 ```
 In [debug] console global exception handler is suppressed and have to call GPT explicitly:
 ```python
->>> import smart_exceptions as se; se.install("your-openai-token", explicit=True)
->>> ...
+>>> import smart_exceptions as se; se.init("your-openai-token")
+>>> ...[code causing exception]...
 >>> se.ask_gpt()
 ```
 
@@ -28,5 +29,4 @@ Also you can specify proxy explicitly or via _$OPENAI\_PROXY_.
 ## TODO
 4. Other GPTs: Bard, Clade, Yandex
 5. Dialog mode
-6. Skip filesend from console
-7. Docstrings
+6. Skip filesend from console OR improve codefile detection
