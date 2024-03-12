@@ -1,7 +1,8 @@
 import os
 import smart_exceptions as se
 
-se.install(lang="russian")
+se.init(lang="russian")
+se.install_handler()
 
 #3 / 0
 #print({}["asdf"])

@@ -1,59 +1,44 @@
 import sys
 import io
 import os
-import httpx
 
-from traceback import print_exception
 from rich import print
-from rich.markdown import Markdown
 from rich.traceback import Traceback
 
-import openai
-from contextlib import contextmanager
+from .backends import get_by_name
+gpt_backend = None
 
-MAX_CODE_LEN = 10000
 
-client = None
-sys_prompt = """
-    Help me to debug Python exceptions. 
-    Use Markdown with sections.
-    Answer in {lang}.
+def init(api_token: str=None, *, lang="english", proxy=None, send_code=True, backend='openai'):
     """
+    Init GPT backend for future use:
+    either implicitly with install exception handler OR asking explicitly. 
 
-
-@contextmanager
-def redirect_stderr():
-    try:
-        buffer = io.StringIO()
-        sys.stderr = buffer
-        yield buffer
-    finally:
-        sys.stderr = sys.__stderr__
-
-
-def install(api_token: str=None, *, explicit=False, lang="english", proxy=None, send_code=True, backend='openai'):
+    api_token: GPT API token
+    lang: language of answer, default English
+    proxy: proxy to use for requests, default None
+    send_code: send code along with a stacktrace, default True
+    backend: GPT backend to use, default OpenAI
     """
-    Init GPT backend and optionaly set exception handler (if explicit=False).
-
-    api_token:
-    explicit:
-    lang:
-    proxy:
-    send_code:
-    backend:
-    """
-    global client
-    backend = backend.upper()
+    global gpt_backend
     if api_token is None:
         try:
-            api_token = os.environ[f'{backend}_TOKEN']
+            api_token = os.environ[f'{backend.upper()}_TOKEN']
         except KeyError:
-            raise ValueError("Please provide GPT api token via param or ${backend}_TOKEN var")
+            raise ValueError("Please provide GPT api token via param or ${backend.upper()}_TOKEN var")
 
     if proxy is None:
-        proxy = os.environ.get(f'{backend}_PROXY')
+        proxy = os.environ.get(f'{backend.upper()}_PROXY')
+
+    gpt_backend = get_by_name(backend)(api_token, lang=lang, proxy=proxy, send_code=send_code)
 
 
+def install_handler():
+    """
+    Install global exception handler.
+    That won't work in debug console and Ipython.
+    """
+    global gpt_backend
     def smart_handler(type, value, traceback):
         print(Traceback.from_exception(
             type, value, traceback,
@@ -61,54 +46,22 @@ def install(api_token: str=None, *, explicit=False, lang="english", proxy=None, 
         ))
 
         exc_info = (type, value, traceback)
-        ask_gpt(exc_info, lang=lang, send_code=send_code)
+        gpt_backend.ask_gpt(exc_info, dialog=False)
     
-    client = openai.OpenAI(api_key=openai_token, http_client=httpx.Client(proxy=proxy))
-    if not explicit:
-        sys.excepthook = smart_handler
+    sys.excepthook = smart_handler
 
 
-def ask_gpt(exc_info=None, *, dialog=False, send_code=True, lang="english"):
+def ask_gpt(*, dialog=False):
     """
-    Ask GPT about exception explicitly.
-    exc_info: (type, value, traceback)
-    dialog: continue chat after answer
-    send_code: send code together with traceback
-    lang: answer language
+    Ask GPT about last exception explicitly.
+    Suitable for debug console and Ipython.
+
+    dialog: continue the chat after an answer, default False
     """
-    global client
-    if client is None:
-        raise ValueError("Please call install() first!")
+    global gpt_backend
+    if gpt_backend is None:
+        raise ValueError("Please call init() first!")
+    
+    exc_info=(sys.last_type, sys.last_value, sys.last_traceback)
+    gpt_backend.ask_gpt(exc_info, dialog=dialog)
 
-    if exc_info is None:
-        exc_info=(sys.last_type, sys.last_value, sys.last_traceback)
-    type, value, traceback = exc_info
-
-    code = None
-    filename = traceback.tb_frame.f_code.co_filename
-    #TODO: detect console
-    try:
-        if send_code:
-            with open(filename, encoding="utf8") as codefile:
-                code = codefile.read()
-                code = code[:MAX_CODE_LEN]
-    except IOError:
-        print("[red]Can't read code file[/red], ignoring...")
-
-    with redirect_stderr() as buffer:
-        print_exception(type, value, traceback)
-        trace = buffer.getvalue()
-
-    #TODO: move next to backend
-    gpt_request = [
-        {"role": "system", "content": sys_prompt.format(lang=lang)},
-        {"role": "user", "content": f"```{code}```"},
-        {"role": "user", "content": trace},
-    ]
-
-    print("Asking [bold green]ChatGPT...[/bold green]")
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=gpt_request,
-    )
-    print(Markdown(response.choices[0].message.content))
