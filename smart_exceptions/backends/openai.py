@@ -13,7 +13,7 @@ sys_prompt = """
     Answer in {lang}.
     """
 
-class OpenAI(GPTBackend):
+class ChatGPT(GPTBackend):
     def __init__(self, api_token: str, *, lang: str, send_code: bool, proxy: Optional[str]):
         self.lang = lang
         self.send_code = send_code
@@ -33,4 +33,4 @@ class OpenAI(GPTBackend):
             messages=gpt_request,
         )
         print(Markdown(response.choices[0].message.content))
-        
+
