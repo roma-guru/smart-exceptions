@@ -16,11 +16,12 @@ def init(
     lang="english",
     proxy=None,
     send_code=True,
-    backend="openai",
+    backend="chatgpt",
 ):
     """
     Init GPT backend for future use:
     either implicitly with install exception handler OR asking explicitly.
+    Must be called explicitly first!
 
     api_token: GPT API token
     lang: language of answer, default English
@@ -65,7 +66,7 @@ def install_handler():
     sys.excepthook = smart_handler
 
 
-def ask_gpt(*, dialog=False):
+def ask(*, dialog=False):
     """
     Ask GPT about last exception explicitly.
     Suitable for debug console and Ipython.
@@ -76,5 +77,12 @@ def ask_gpt(*, dialog=False):
     if gpt_backend is None:
         raise ValueError("Please call init() first!")
 
-    exc_info = (sys.last_type, sys.last_value, sys.last_traceback)
-    gpt_backend.ask_gpt(exc_info, dialog=dialog)
+    try:
+        exc_info = (sys.last_type, sys.last_value, sys.last_traceback)
+    except AttributeError:
+        exc_info = sys.exc_info()
+
+    if exc_info == (None, None, None):
+        print("[bold yellow]WARN[/bold yellow] no exceptions yet")
+    else:
+        gpt_backend.ask_gpt(exc_info, dialog=dialog)

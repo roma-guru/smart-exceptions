@@ -1,11 +1,13 @@
 from .openai import ChatGPT
 from .anthropic import Claude
+from .groq import Groq
+
 
 def get_by_name(name: str) -> type:
-    if name.lower()=="openai":
-        return ChatGPT
-    elif name.lower()=="claude":
-        return Claude
+    name = name.lower()
+    classes = (ChatGPT, Claude, Groq)
+    for cl in classes:
+        if cl.__name__.lower() == name:
+            return cl
 
     raise ValueError("unknown backend")
-
