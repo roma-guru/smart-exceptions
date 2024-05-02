@@ -15,11 +15,11 @@ ExcInfo = Tuple[Any]
 
 class GPTBackend(ABC):
     # TODO: count tokens instead
-    MAX_CODE_LEN = 100000
+    MAX_CODE_LEN = 10000
 
     SYSTEM_ROLE = "system"
     USER_ROLE = "user"
-    ASSISTENT_ROLE = "assistent"
+    ASSISTENT_ROLE = "assistant"
 
     sys_prompt = """
         Help me to debug Python exceptions.
@@ -33,29 +33,31 @@ class GPTBackend(ABC):
 
     def __init__(self, lang: str, send_code: bool):
         self.lang = lang
+        self.name = type(self).__name__
         self.send_code = send_code
 
-    def _prepare_trace_and_code(
-        self, exc_info: Optional[ExcInfo], send_code: bool
-    ) -> Tuple[str]:
+    def _prepare_code(self, exc_info: Optional[ExcInfo]) -> str:
         type, value, traceback = exc_info
 
         code = None
+        if not self.send_code:
+            return code
         filename = traceback.tb_frame.f_code.co_filename
-        # TODO: detect console
         try:
-            if send_code:
-                with open(filename, encoding="utf8") as codefile:
-                    code = codefile.read()
-                    code = code[: self.MAX_CODE_LEN]
+            with open(filename, encoding="utf8") as codefile:
+                code = codefile.read()
+                code = code[: self.MAX_CODE_LEN]
         except IOError:
             print("[red]Can't read code file[/red], ignoring...")
+
+    def _prepare_trace(self, exc_info: ExcInfo) -> str:
+        type, value, traceback = exc_info
 
         with redirect_stderr() as buffer:
             print_exception(type, value, traceback)
             trace = buffer.getvalue()
 
-        return trace, code
+        return trace
 
     def _send_request(self, gpt_request: GPTRequest, stream: bool) -> Any:
         if stream:
@@ -69,7 +71,9 @@ class GPTBackend(ABC):
         )
 
     def _prepare_request(self, exc_info: ExcInfo) -> GPTRequest:
-        trace, code = self._prepare_trace_and_code(exc_info, self.send_code)
+        trace = self._prepare_trace(exc_info)
+        code = self._prepare_code(exc_info)
+
         gpt_request = [
             {
                 "role": self.SYSTEM_ROLE,
@@ -83,7 +87,7 @@ class GPTBackend(ABC):
     def ask_gpt(
         self, exc_info: ExcInfo, /, *, dialog: bool = False, stream: bool = False
     ):
-        print(f"Asking [bold {self.color}]{type(self).__name__}...[/bold {self.color}]")
+        print(f"Asking [bold {self.color}]{self.name}...[/bold {self.color}]")
         request = self._prepare_request(exc_info)
         response = self._send_request(request, stream)
 
@@ -92,14 +96,18 @@ class GPTBackend(ABC):
         if not dialog:
             return
 
+        print("=" * 100)
         while prompt := input("User: "):
             request.append({"role": self.ASSISTENT_ROLE, "content": answer})
             request.append({"role": self.USER_ROLE, "content": prompt})
             response = self._send_request(request, stream)
+            print("-" * 100)
             answer = self._print_response(response, stream)
+            print("=" * 100)
 
     def _print_response(self, response: GPTResponse, stream: bool) -> str:
-        print("GPT: ", end="")
+        print(f"[bold {self.color}]{self.name}[/bold {self.color}]")
+        # TODO: check error
         if stream:
             ...
         else:
