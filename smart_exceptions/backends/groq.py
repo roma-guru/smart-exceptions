@@ -3,7 +3,7 @@ from typing import Optional, Tuple, Any
 import groq
 import httpx
 
-from .base import GPTBackend
+from .base import GPTBackend, GPTRequest
 
 
 class Groq(GPTBackend):
@@ -16,4 +16,15 @@ class Groq(GPTBackend):
         super().__init__(lang, send_code)
         self.client = groq.Groq(
             api_key=api_token, http_client=httpx.Client(proxy=proxy)
+        )
+
+    def _send_request(self, gpt_request: GPTRequest, stream: bool) -> Any:
+        if stream:
+            return self.client.chat.completions.create(
+                model=self.model, messages=gpt_request, streaming=True
+            )
+
+        return self.client.chat.completions.create(
+            model=self.model,
+            messages=gpt_request,
         )

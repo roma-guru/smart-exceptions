@@ -1,4 +1,3 @@
-import sys
 from abc import ABC
 from traceback import print_exception
 from typing import Tuple, Optional, Any, List, Dict, Union
@@ -16,6 +15,7 @@ ExcInfo = Tuple[Any]
 class GPTBackend(ABC):
     # TODO: count tokens instead
     MAX_CODE_LEN = 10000
+    MAX_TOKENS = 1000
 
     SYSTEM_ROLE = "system"
     USER_ROLE = "user"
@@ -105,13 +105,16 @@ class GPTBackend(ABC):
             answer = self._print_response(response, stream)
             print("=" * 100)
 
+    def _extract_answer(self, response: GPTResponse):
+        return response.choices[0].message.content
+
     def _print_response(self, response: GPTResponse, stream: bool) -> str:
         print(f"[bold {self.color}]{self.name}[/bold {self.color}]")
         # TODO: check error
         if stream:
             ...
         else:
-            answer = response.choices[0].message.content
+            answer = self._extract_answer(response)
 
         print(Markdown(answer))
         return answer

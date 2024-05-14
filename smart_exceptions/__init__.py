@@ -59,6 +59,7 @@ def install_handler(show_locals=True, max_frames=5, dialog=False):
     global gpt_backend
 
     run_env = detect_env()
+    print(f"Detected [italic]{run_env}[/italic]")
 
     def smart_handler(type, value, traceback):
         if run_env == "python":
@@ -82,7 +83,7 @@ def install_handler(show_locals=True, max_frames=5, dialog=False):
 
     if run_env == "ipython":
         show_locals = False
-        get_ipython().set_custom_exc((Exception,), smart_ipy_handler)
+        get_ipython().set_custom_exc((Exception,), smart_ipy_handler)  # noqa
     else:
         sys.excepthook = smart_handler
 
