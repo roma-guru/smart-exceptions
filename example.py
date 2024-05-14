@@ -1,9 +1,9 @@
 import smart_exceptions as se
 
-se.init(lang="russian")
-se.install_handler()
+se.init(backend="groq")
+se.install_handler(dialog=True)
 
-# 3 / 0
+3 / 0
 # print({}["asdf"])
 
 

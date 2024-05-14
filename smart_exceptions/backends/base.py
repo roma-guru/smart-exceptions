@@ -1,4 +1,5 @@
 from abc import ABC
+from io import StringIO
 from traceback import print_exception
 from typing import Tuple, Optional, Any, List, Dict, Union
 
@@ -26,7 +27,7 @@ class GPTBackend(ABC):
         Use Markdown with sections.
         Answer in {lang}.
         """
-    # Override fields
+    # Override fields in subs
     model = None
     color = None
     client = None
@@ -108,11 +109,19 @@ class GPTBackend(ABC):
     def _extract_answer(self, response: GPTResponse):
         return response.choices[0].message.content
 
+    def _print_and_aggregate(self, response: GPTResponse):
+        buf = StringIO()
+        for chunk in response:
+            buf.write(chunk)
+            print(chunk)
+        return buf.getvalue()
+
     def _print_response(self, response: GPTResponse, stream: bool) -> str:
         print(f"[bold {self.color}]{self.name}[/bold {self.color}]")
         # TODO: check error
         if stream:
-            ...
+            answer = self._print_and_aggregate(response)
+            print("\b" * len(answer))
         else:
             answer = self._extract_answer(response)
 
