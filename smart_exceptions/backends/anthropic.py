@@ -29,12 +29,13 @@ class Claude(GPTBackend):
     def _send_request(self, gpt_request: GPTRequest, stream: bool) -> Any:
         sys_message = self.sys_prompt.format(lang=self.lang)
         if stream:
-            return self.messages.stream(
+            with self.client.messages.stream(
                 model=self.model,
                 messages=gpt_request,
                 max_tokens=self.MAX_TOKENS,
                 system=sys_message,
-            )
+            ) as stream_obj:
+                yield from stream_obj.text_stream
 
         return self.client.messages.create(
             model=self.model,
@@ -43,5 +44,8 @@ class Claude(GPTBackend):
             system=sys_message,
         )
 
-    def _extract_answer(self, response: GPTResponse):
+    def _extract_answer(self, response: GPTResponse) -> str:
         return response.content[0].text
+
+    def _extract_delta(self, chunk: Any) -> str:
+        return chunk

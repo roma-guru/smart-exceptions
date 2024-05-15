@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from io import StringIO
 from traceback import print_exception
 from typing import Tuple, Optional, Any, List, Dict, Union
@@ -38,11 +38,11 @@ class GPTBackend(ABC):
         self.name = type(self).__name__
         self.send_code = send_code
 
-    def _prepare_code(self, exc_info: Optional[ExcInfo]) -> str:
+    def _prepare_code(self, exc_info: ExcInfo) -> str:
         type, value, traceback = exc_info
 
         code = None
-        if not self.send_code:
+        if not self.send_code or traceback is None:
             return code
         filename = traceback.tb_frame.f_code.co_filename
         try:
@@ -61,35 +61,27 @@ class GPTBackend(ABC):
 
         return trace
 
+    # override in subs
+    @abstractmethod
     def _send_request(self, gpt_request: GPTRequest, stream: bool) -> Any:
-        if stream:
-            return self.client.chat.completions.create(
-                model=self.model, messages=gpt_request, stream=True
-            )
+        return NotImplemented
 
-        return self.client.chat.completions.create(
-            model=self.model,
-            messages=gpt_request,
-        )
-
+    @abstractmethod
     def _prepare_request(self, exc_info: ExcInfo) -> GPTRequest:
-        trace = self._prepare_trace(exc_info)
-        code = self._prepare_code(exc_info)
+        return NotImplemented
 
-        gpt_request = [
-            {
-                "role": self.SYSTEM_ROLE,
-                "content": self.sys_prompt.format(lang=self.lang),
-            },
-            {"role": self.USER_ROLE, "content": f"```{code}```"},
-            {"role": self.USER_ROLE, "content": trace},
-        ]
-        return gpt_request
+    @abstractmethod
+    def _extract_answer(self, response: GPTResponse) -> str:
+        return NotImplemented
+
+    @abstractmethod
+    def _extract_delta(self, chunk: Any) -> str:
+        return NotImplemented
 
     def ask_gpt(
         self, exc_info: ExcInfo, /, *, dialog: bool = False, stream: bool = False
     ):
-        print(f"Asking [bold {self.color}]{self.name}...[/bold {self.color}]")
+        print(f"Asking [bold {self.color}]{self.name}[/bold {self.color}] ...")
         request = self._prepare_request(exc_info)
         response = self._send_request(request, stream)
 
@@ -99,7 +91,13 @@ class GPTBackend(ABC):
             return
 
         print("=" * 100)
-        while prompt := input("User: "):
+        while True:
+            print(
+                "[bold magenta]User[/bold magenta] ([italic]leave empty to finish[/italic]):"
+            )
+            prompt = input()
+            if not prompt:
+                break
             request.append({"role": self.ASSISTENT_ROLE, "content": answer})
             request.append({"role": self.USER_ROLE, "content": prompt})
             response = self._send_request(request, stream)
@@ -107,14 +105,11 @@ class GPTBackend(ABC):
             answer = self._print_response(response, stream)
             print("=" * 100)
 
-    def _extract_answer(self, response: GPTResponse):
-        return response.choices[0].message.content
-
     def _print_and_aggregate(self, response: GPTResponse) -> str:
         buf = StringIO()
-        with Live("...", transient=True) as live:
+        with Live("...", transient=True, screen=True) as live:
             for chunk in response:
-                text = chunk.choices[0].delta.content
+                text = self._extract_delta(chunk)
                 if text is not None:
                     buf.write(text)
                     live.update(buf.getvalue())
@@ -122,8 +117,7 @@ class GPTBackend(ABC):
         return buf.getvalue()
 
     def _print_response(self, response: GPTResponse, stream: bool) -> str:
-        print(f"[bold {self.color}]{self.name}[/bold {self.color}]")
-        # TODO: check error
+        print(f"[bold {self.color}]{self.name}:[/bold {self.color}]")
         if stream:
             answer = self._print_and_aggregate(response)
         else:

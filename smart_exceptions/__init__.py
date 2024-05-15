@@ -76,6 +76,7 @@ def install_handler(show_locals=True, max_frames=5, stream=True, dialog=False):
             print_exception(type, value, traceback)
 
         exc_info = (type, value, traceback)
+        print(exc_info)
         gpt_backend.ask_gpt(exc_info, stream=stream, dialog=dialog)
 
     def smart_ipy_handler(_, type, value, traceback, **kwargs):  # pragma: no cover
@@ -86,6 +87,14 @@ def install_handler(show_locals=True, max_frames=5, stream=True, dialog=False):
         get_ipython().set_custom_exc((Exception,), smart_ipy_handler)  # noqa
     else:
         sys.excepthook = smart_handler
+
+
+def get_last_exc_info():
+    try:
+        exc_info = (sys.last_type, sys.last_value, sys.last_traceback)
+    except AttributeError:
+        exc_info = sys.exc_info()
+    return exc_info
 
 
 def ask(*, stream=True, dialog=True):
@@ -99,10 +108,7 @@ def ask(*, stream=True, dialog=True):
     if gpt_backend is None:
         raise ValueError("Please call init() first!")
 
-    try:
-        exc_info = (sys.last_type, sys.last_value, sys.last_traceback)
-    except AttributeError:
-        exc_info = sys.exc_info()
+    exc_info = get_last_exc_info()
 
     if exc_info == (None, None, None):
         print("[bold yellow]WARN[/bold yellow] no exceptions yet")
