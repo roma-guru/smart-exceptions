@@ -27,6 +27,18 @@ Also you can specify proxy explicitly or via _$OPENAI\_PROXY_.
 ![Example](screenshot.png)
 
 ## TODO
-4. Other GPTs: Bard, Clade, Yandex
-5. Dialog mode
-6. Skip filesend from console OR improve codefile detection
+- Autoinit from env (*_TOKEN) ???
+- TOken counting
+- Better pytest support
+
+## Pytest support
+Place this in `conftest.py`:
+```
+import smart_exceptions as se
+se.init()
+
+
+def pytest_exception_interact(node, call, report):
+    exc_info = (call.excinfo.type, call.excinfo.value, call.excinfo.traceback[0]._rawentry)
+    se.gpt_backend.ask_gpt(exc_info)
+```
