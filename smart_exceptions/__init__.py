@@ -47,7 +47,7 @@ def init(
     )
 
 
-def install_handler(show_locals=True, max_frames=5, dialog=False):
+def install_handler(show_locals=True, max_frames=5, stream=True, dialog=False):
     """
     Install global exception handler.
     That won't work in debug console and Ipython.
@@ -76,7 +76,7 @@ def install_handler(show_locals=True, max_frames=5, dialog=False):
             print_exception(type, value, traceback)
 
         exc_info = (type, value, traceback)
-        gpt_backend.ask_gpt(exc_info, dialog=dialog)
+        gpt_backend.ask_gpt(exc_info, stream=stream, dialog=dialog)
 
     def smart_ipy_handler(_, type, value, traceback, **kwargs):  # pragma: no cover
         smart_handler(type, value, traceback)
@@ -88,7 +88,7 @@ def install_handler(show_locals=True, max_frames=5, dialog=False):
         sys.excepthook = smart_handler
 
 
-def ask(*, dialog=True):
+def ask(*, stream=True, dialog=True):
     """
     Ask GPT about last exception explicitly.
     Suitable for debug console and Ipython.
@@ -107,4 +107,4 @@ def ask(*, dialog=True):
     if exc_info == (None, None, None):
         print("[bold yellow]WARN[/bold yellow] no exceptions yet")
     else:
-        gpt_backend.ask_gpt(exc_info, dialog=dialog)
+        gpt_backend.ask_gpt(exc_info, stream=stream, dialog=dialog)

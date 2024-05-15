@@ -6,10 +6,11 @@ from typing import Tuple, Optional, Any, List, Dict, Union
 from ..utils import redirect_stderr
 
 from rich import print
+from rich.live import Live
 from rich.markdown import Markdown
 
 GPTRequest = List[Dict[str, str]]
-GPTResponse = Union[...]
+GPTResponse = Any
 ExcInfo = Tuple[Any]
 
 
@@ -63,7 +64,7 @@ class GPTBackend(ABC):
     def _send_request(self, gpt_request: GPTRequest, stream: bool) -> Any:
         if stream:
             return self.client.chat.completions.create(
-                model=self.model, messages=gpt_request, streaming=True
+                model=self.model, messages=gpt_request, stream=True
             )
 
         return self.client.chat.completions.create(
@@ -109,11 +110,15 @@ class GPTBackend(ABC):
     def _extract_answer(self, response: GPTResponse):
         return response.choices[0].message.content
 
-    def _print_and_aggregate(self, response: GPTResponse):
+    def _print_and_aggregate(self, response: GPTResponse) -> str:
         buf = StringIO()
-        for chunk in response:
-            buf.write(chunk)
-            print(chunk)
+        with Live("...", transient=True) as live:
+            for chunk in response:
+                text = chunk.choices[0].delta.content
+                if text is not None:
+                    buf.write(text)
+                    live.update(buf.getvalue())
+
         return buf.getvalue()
 
     def _print_response(self, response: GPTResponse, stream: bool) -> str:
@@ -121,7 +126,6 @@ class GPTBackend(ABC):
         # TODO: check error
         if stream:
             answer = self._print_and_aggregate(response)
-            print("\b" * len(answer))
         else:
             answer = self._extract_answer(response)
 

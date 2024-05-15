@@ -1,6 +1,6 @@
 import smart_exceptions as se
 
-se.init(backend="groq")
+se.init(backend="chatgpt")
 se.install_handler(dialog=True)
 
 3 / 0
