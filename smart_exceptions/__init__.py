@@ -76,7 +76,6 @@ def install_handler(show_locals=True, max_frames=5, stream=True, dialog=False):
             print_exception(type, value, traceback)
 
         exc_info = (type, value, traceback)
-        print(exc_info)
         gpt_backend.ask_gpt(exc_info, stream=stream, dialog=dialog)
 
     def smart_ipy_handler(_, type, value, traceback, **kwargs):  # pragma: no cover

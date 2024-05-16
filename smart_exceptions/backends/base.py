@@ -93,7 +93,8 @@ class GPTBackend(ABC):
         print("=" * 100)
         while True:
             print(
-                "[bold magenta]User[/bold magenta] ([italic]leave empty to finish[/italic]):"
+                "[bold magenta]User[/bold magenta] ([italic]leave empty to finish[/italic]): ",
+                end="",
             )
             prompt = input()
             if not prompt:
