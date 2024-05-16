@@ -107,7 +107,7 @@ class GPTBackend(ABC):
 
     def _print_and_aggregate(self, response: GPTResponse) -> str:
         buf = StringIO()
-        with Live("...", transient=True, screen=True) as live:
+        with Live("...", transient=True, screen=False) as live:
             for chunk in response:
                 text = self._extract_delta(chunk)
                 if text is not None:
