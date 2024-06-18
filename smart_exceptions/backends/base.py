@@ -8,6 +8,7 @@ from ..utils import redirect_stderr
 from rich import print
 from rich.live import Live
 from rich.markdown import Markdown
+import tiktoken
 
 GPTRequest = List[Dict[str, str]]
 GPTResponse = Any
@@ -15,9 +16,8 @@ ExcInfo = Tuple[Any]
 
 
 class GPTBackend(ABC):
-    # TODO: count tokens instead
-    MAX_CODE_LEN = 10000
-    MAX_TOKENS = 1000
+    # max context size in tokens, 4k is a safe choice
+    MAX_TOKENS = 4000
 
     SYSTEM_ROLE = "system"
     USER_ROLE = "user"
@@ -48,9 +48,10 @@ class GPTBackend(ABC):
         try:
             with open(filename, encoding="utf8") as codefile:
                 code = codefile.read()
-                code = code[: self.MAX_CODE_LEN]
         except IOError:
             print("[red]Can't read code file[/red], ignoring...")
+
+        return self._limit_tokens(code)
 
     def _prepare_trace(self, exc_info: ExcInfo) -> str:
         type, value, traceback = exc_info
@@ -59,7 +60,15 @@ class GPTBackend(ABC):
             print_exception(type, value, traceback)
             trace = buffer.getvalue()
 
-        return trace
+        return self._limit_tokens(trace)
+
+    def _limit_tokens(self, text: str) -> str:
+        if not text:
+            return text
+
+        encoding = tiktoken.get_encoding("cl100k_base")
+        tokens = encoding.encode(text)
+        return encoding.decode(tokens[: self.MAX_TOKENS])
 
     # override in subs
     @abstractmethod

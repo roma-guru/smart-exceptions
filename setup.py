@@ -5,6 +5,7 @@ setup(
     version="0.0.2",
     install_requires=[
         "openai==1.12.0",
+        "tiktoken==0.7.0",
         # "google-generativeai==0.4.1",
         "anthropic==0.20.0",
         "groq==0.5.0",
