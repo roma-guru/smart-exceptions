@@ -1,4 +1,5 @@
-import sys, io
+import io
+import sys
 from contextlib import contextmanager
 
 

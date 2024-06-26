@@ -1,9 +1,9 @@
-from typing import Optional, Tuple, Any
+from typing import Any, Optional, Tuple
 
 import groq
 import httpx
 
-from .base import GPTBackend, GPTRequest, GPTResponse, ExcInfo
+from .base import ExcInfo, GPTBackend, GPTRequest, GPTResponse
 
 
 class Groq(GPTBackend):

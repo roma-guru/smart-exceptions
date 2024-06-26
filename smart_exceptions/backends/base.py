@@ -1,14 +1,14 @@
 from abc import ABC, abstractmethod
 from io import StringIO
 from traceback import print_exception
-from typing import Tuple, Optional, Any, List, Dict, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-from ..utils import redirect_stderr
-
+import tiktoken
 from rich import print
 from rich.live import Live
 from rich.markdown import Markdown
-import tiktoken
+
+from ..utils import redirect_stderr
 
 GPTRequest = List[Dict[str, str]]
 GPTResponse = Any

@@ -1,6 +1,6 @@
-from .openai import ChatGPT
 from .anthropic import Claude
 from .groq import Groq
+from .openai import ChatGPT
 
 
 def get_by_name(name: str) -> type:

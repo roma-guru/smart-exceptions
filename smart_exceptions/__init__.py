@@ -1,9 +1,9 @@
 import os
 import sys
+from traceback import print_exception
 
 from rich import print
 from rich.traceback import Traceback
-from traceback import print_exception
 
 from .backends import get_by_name
 from .run_env import detect_env

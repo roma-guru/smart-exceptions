@@ -1,8 +1,9 @@
 from typing import Any
+
 import anthropic
 import httpx
 
-from .base import GPTBackend, GPTRequest, GPTResponse, ExcInfo
+from .base import ExcInfo, GPTBackend, GPTRequest, GPTResponse
 
 
 class Claude(GPTBackend):

@@ -1,9 +1,9 @@
-from typing import Optional, Tuple, Any
+from typing import Any, Optional, Tuple
 
-import openai
 import httpx
+import openai
 
-from .base import GPTBackend, GPTRequest, GPTResponse, ExcInfo
+from .base import ExcInfo, GPTBackend, GPTRequest, GPTResponse
 
 
 class ChatGPT(GPTBackend):
