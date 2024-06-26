@@ -1,6 +1,7 @@
 import sys, io
 from contextlib import contextmanager
 
+
 @contextmanager
 def redirect_stderr():
     try:
@@ -9,4 +10,3 @@ def redirect_stderr():
         yield buffer
     finally:
         sys.stderr = sys.__stderr__
-

@@ -4,3 +4,4 @@ build
 dist
 .env
 __pycache__
+.coverage

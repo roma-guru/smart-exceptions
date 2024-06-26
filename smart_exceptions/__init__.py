@@ -61,7 +61,7 @@ def install_handler(show_locals=True, max_frames=5, stream=True, dialog=False):
     run_env = detect_env()
     print(f"Detected [italic]{run_env}[/italic]")
 
-    def smart_handler(type, value, traceback):
+    def smart_handler(type, value, traceback):  # pragma: no cover
         if run_env == "python":
             print(
                 Traceback.from_exception(
@@ -88,14 +88,6 @@ def install_handler(show_locals=True, max_frames=5, stream=True, dialog=False):
         sys.excepthook = smart_handler
 
 
-def get_last_exc_info():
-    try:
-        exc_info = (sys.last_type, sys.last_value, sys.last_traceback)
-    except AttributeError:
-        exc_info = sys.exc_info()
-    return exc_info
-
-
 def ask(*, stream=True, dialog=True):
     """
     Ask GPT about last exception explicitly.
@@ -107,7 +99,7 @@ def ask(*, stream=True, dialog=True):
     if gpt_backend is None:
         raise ValueError("Please call init() first!")
 
-    exc_info = get_last_exc_info()
+    exc_info = sys.exc_info()
 
     if exc_info == (None, None, None):
         print("[bold yellow]WARN[/bold yellow] no exceptions yet")
