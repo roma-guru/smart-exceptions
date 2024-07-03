@@ -41,7 +41,7 @@ class GPTBackend(ABC):
     def _prepare_code(self, exc_info: ExcInfo) -> str:
         type, value, traceback = exc_info
 
-        code = None
+        code = ""
         if not self.send_code or traceback is None:
             return code
         filename = traceback.tb_frame.f_code.co_filename
@@ -55,6 +55,10 @@ class GPTBackend(ABC):
 
     def _prepare_trace(self, exc_info: ExcInfo) -> str:
         type, value, traceback = exc_info
+
+        trace = ""
+        if traceback is None:
+            return trace
 
         with redirect_stderr() as buffer:
             print_exception(type, value, traceback)
@@ -73,19 +77,19 @@ class GPTBackend(ABC):
     # override in subs
     @abstractmethod
     def _send_request(self, gpt_request: GPTRequest, stream: bool) -> Any:
-        return NotImplemented
+        return NotImplemented  # pragma: no cover
 
     @abstractmethod
     def _prepare_request(self, exc_info: ExcInfo) -> GPTRequest:
-        return NotImplemented
+        return NotImplemented  # pragma: no cover
 
     @abstractmethod
     def _extract_answer(self, response: GPTResponse) -> str:
-        return NotImplemented
+        return NotImplemented  # pragma: no cover
 
     @abstractmethod
     def _extract_delta(self, chunk: Any) -> str:
-        return NotImplemented
+        return NotImplemented  # pragma: no cover
 
     def ask_gpt(
         self, exc_info: ExcInfo, /, *, dialog: bool = False, stream: bool = False
