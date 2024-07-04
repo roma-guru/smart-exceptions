@@ -21,17 +21,6 @@ class Groq(GPTBackend):
     def _send_request(self, gpt_request: GPTRequest, stream: bool) -> Any:
         if stream:
             return self.client.chat.completions.create(
-                model=self.model, messages=gpt_request, streaming=True
-            )
-
-        return self.client.chat.completions.create(
-            model=self.model,
-            messages=gpt_request,
-        )
-
-    def _send_request(self, gpt_request: GPTRequest, stream: bool) -> Any:
-        if stream:
-            return self.client.chat.completions.create(
                 model=self.model, messages=gpt_request, stream=True
             )
 

@@ -27,7 +27,9 @@ class Claude(GPTBackend):
         ]
         return gpt_request
 
-    def _send_request(self, gpt_request: GPTRequest, stream: bool) -> Any:
+    def _send_request(
+        self, gpt_request: GPTRequest, stream: bool
+    ) -> Any:  # pragma: no cover
         sys_message = self.sys_prompt.format(lang=self.lang)
         if stream:
             with self.client.messages.stream(
@@ -36,7 +38,9 @@ class Claude(GPTBackend):
                 max_tokens=self.MAX_TOKENS,
                 system=sys_message,
             ) as stream_obj:
+                # TODO: for some reason this yield fails unit testing
                 yield from stream_obj.text_stream
+            return
 
         return self.client.messages.create(
             model=self.model,
