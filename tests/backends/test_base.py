@@ -1,5 +1,5 @@
 from smart_exceptions.backends.base import GPTBackend, GPTRequest, GPTResponse, ExcInfo
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 import pytest
 from unittest.mock import MagicMock, patch
 import io

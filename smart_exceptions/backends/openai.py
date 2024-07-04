@@ -1,4 +1,4 @@
-from typing import Any, Optional, Tuple
+from typing import Any, Tuple
 
 import httpx
 import openai
@@ -11,7 +11,7 @@ class ChatGPT(GPTBackend):
     color = "green"
 
     def __init__(
-        self, api_token: str, *, lang: str, send_code: bool, proxy: Optional[str]
+        self, api_token: str, *, lang: str, send_code: bool, proxy: str | None
     ):
         super().__init__(lang, send_code)
         self.client = openai.OpenAI(
