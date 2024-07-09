@@ -27,20 +27,19 @@ class Claude(GPTBackend):
         ]
         return gpt_request
 
-    def _send_request(
-        self, gpt_request: GPTRequest, stream: bool
-    ) -> Any:  # pragma: no cover
+    def _chunk_gen(self, sys_message: str, gpt_request: GPTRequest):
+        with self.client.messages.stream(
+            model=self.model,
+            messages=gpt_request,
+            max_tokens=self.MAX_TOKENS,
+            system=sys_message,
+        ) as stream_obj:
+            yield from stream_obj.text_stream
+
+    def _send_request(self, gpt_request: GPTRequest, stream: bool) -> Any:
         sys_message = self.sys_prompt.format(lang=self.lang)
         if stream:
-            with self.client.messages.stream(
-                model=self.model,
-                messages=gpt_request,
-                max_tokens=self.MAX_TOKENS,
-                system=sys_message,
-            ) as stream_obj:
-                # TODO: for some reason this yield fails unit testing
-                yield from stream_obj.text_stream
-            return
+            return self._chunk_gen(sys_message, gpt_request)
 
         return self.client.messages.create(
             model=self.model,

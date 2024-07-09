@@ -11,15 +11,14 @@ def mock_claude():
         yield backend
 
 
-@pytest.mark.skip
 def test_send_request(mock_claude):
-    # __import__("ipdb").set_trace()
-    mock_claude._send_request(sentinel.gpt_request, stream=True)
-    assert mock_claude.client.messages.stream.called
-    mock_claude.client.reset_mock()
-
     mock_claude._send_request(sentinel.gpt_request, stream=False)
     assert mock_claude.client.messages.create.called
+    mock_claude.client.reset_mock()
+
+    with pytest.raises(StopIteration):
+        next(mock_claude._send_request(sentinel.gpt_request, stream=True))
+    assert mock_claude.client.messages.stream.called
 
 
 def test_prepare_request(mock_claude):
