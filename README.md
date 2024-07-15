@@ -4,7 +4,7 @@ Now your problems are solved at the same moment they're arised!
 
 ## Installation
 ```console
-pip install git+https://github.com/roma-guru/smart-exceptions
+pip install smart-exceptions
 ```
 
 ## Usage
@@ -22,14 +22,8 @@ In [debug] console global exception handler is suppressed and have to call GPT e
 >>> se.ask_gpt()
 ```
 
-You can provide token explicitly or implicitly via _$OPENAI\_TOKEN_.
+You can provide token explicitly or implicitly via _$OPENAI\_TOKEN_ env variable.
 Also you can specify proxy explicitly or via _$OPENAI\_PROXY_.
-![Example](screenshot.png)
-
-## TODO
-- Autoinit from env (*_TOKEN) ???
-- TOken counting
-- Better pytest support
 
 ## Pytest support
 Place this in `conftest.py`:
@@ -42,3 +36,6 @@ def pytest_exception_interact(node, call, report):
     exc_info = (call.excinfo.type, call.excinfo.value, call.excinfo.traceback[0]._rawentry)
     se.gpt_backend.ask_gpt(exc_info)
 ```
+
+## Demo
+https://youtu.be/XfaaJW_2RfU
