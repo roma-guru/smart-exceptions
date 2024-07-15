@@ -38,4 +38,4 @@ def pytest_exception_interact(node, call, report):
 ```
 
 ## Demo
-https://youtu.be/XfaaJW_2RfU
+[![Smart Exceptions Demo](https://img.youtube.com/vi/XfaaJW_2RfU/0.jpg)](https://www.youtube.com/watch?v=XfaaJW_2RfU)
