@@ -27,7 +27,7 @@ Also you can specify proxy explicitly or via _$OPENAI\_PROXY_.
 
 ## Pytest support
 Place this in `conftest.py`:
-```
+```python
 import smart_exceptions as se
 se.init()
 
@@ -39,3 +39,4 @@ def pytest_exception_interact(node, call, report):
 
 ## Demo
 [![Smart Exceptions Demo](https://img.youtube.com/vi/XfaaJW_2RfU/0.jpg)](https://www.youtube.com/watch?v=XfaaJW_2RfU)
+Click to go to Youtube.
