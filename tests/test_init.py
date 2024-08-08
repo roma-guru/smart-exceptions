@@ -12,7 +12,8 @@ def test_init(mock_get_by_name):
 
     mock_backend = MagicMock()
     mock_get_by_name.return_value.return_value = mock_backend
-    se.init()
+    with patch.dict("os.environ", {"CHATGPT_TOKEN": "tokenhere"}):
+        se.init()
     assert se.gpt_backend == mock_backend
     se.gpt_backend = None
 
