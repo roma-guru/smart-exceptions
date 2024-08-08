@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from io import StringIO
 from traceback import print_exception
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple
 
 import tiktoken
 from rich import print

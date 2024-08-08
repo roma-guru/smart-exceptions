@@ -1,6 +1,7 @@
-from typing import Any, Tuple
+from typing import Any
 
 import httpx
+
 import openai
 
 from .base import ExcInfo, GPTBackend, GPTRequest, GPTResponse

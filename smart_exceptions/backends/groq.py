@@ -1,7 +1,8 @@
-from typing import Any, Tuple
+from typing import Any
+
+import httpx
 
 import groq
-import httpx
 
 from .base import ExcInfo, GPTBackend, GPTRequest, GPTResponse
 
